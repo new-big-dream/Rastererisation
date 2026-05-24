@@ -28,23 +28,7 @@ def project(s): #project [x,y,z] into [x',y']
     scale = 400 ##########################################
     cx, cy = width // 2, height // 2
     return [int(cx + x * scale), int(cy - y * scale)]
-
-
-
-
-
-
-"""
-class Point:
-    def __init__(self, x=0, y=0, z=0):
-        self.x = x
-        self.y = y
-        self.z = z
-
-def to_point(lst): #Convert [x, y, z] list or tuple into a Point object.
-    x, y, z = lst
-    return Point(x, y, z)
-"""
+    
 
 def random_rgba():
     r = random.randint(0, 255)
