@@ -6,7 +6,6 @@ import parse
 import camera
 import shader
 
-file = "diablo3_pose.obj"
 file = "rp_dennis_posed_004.obj"
 fichier = "C:/Users/sami/Desktop/Rasterizer - Python/" + file
 
