@@ -6,9 +6,7 @@ import parse
 import camera
 
 
-file = "diablo3_pose.obj"
-file = "head.obj"
-fichier = "C:/Users/sami/Desktop/Rasterizer - Python/" + file
+file = "   " #mettre le l'adresse complète du fichier .obj
 
 white = (255, 255, 255, 255) #automatiquement converti en tableau np.uint après assignement
 green = (0,255,0,255)
