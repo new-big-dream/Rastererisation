@@ -14,7 +14,7 @@ import random
 
 import parse
 import camera
-
+#import shader
 
 # ============================================================================
 # CONFIGURATION
@@ -245,7 +245,7 @@ def triangle(clip, fb, zb, color):
                     if z >= zb[x][y]:
                         set(x, y, zb, z)
                         
-                        # Coloration basée sur la profondeur
+                        # Coloration basée sur la profondeur (à enlever pour avoir coloration aléatoire ou utiliser coloration de phong)
                         z_min = zb[width][height]
                         z_max = zb[width + 1][height + 1]
                         
