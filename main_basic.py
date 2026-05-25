@@ -23,7 +23,7 @@ framebuffer = np.zeros((width, height, 4), dtype = np.uint8) #RGBA
 zbuffer = np.array([[-np.inf for j in range(height+2)] for i in range(width+2)])
 
 
-def project(s): #project [x,y,z] into [x',y']
+def project(s): #projeter [x,y,z] dans [x',y']
     x,y,z = s
     scale = 400 ##########################################
     cx, cy = width // 2, height // 2
@@ -38,7 +38,7 @@ def random_rgba():
     return (r, g, b, a)
 
 
-def set(x,y,fb, color): #color = (R,G,B,A)
+def set(x,y,fb, color): #couleur = (R,G,B,A)
     if 0<=x<len(fb) and 0<=y<len(fb[x]):
         fb[x][y] = color
     
@@ -73,7 +73,7 @@ def line(p1,p2,fb,color): #p = [x,y]
     ax, ay = p1
     bx, by = p2
     steep = abs(ax-by) < abs(ay-by)
-    if steep: #if steep, we increment the y-axis
+    if steep: #si abrupte, on augmente l'axe y
         ax, ay = ay, ax
         bx, by = by, bx
     if ax>bx:
@@ -104,7 +104,7 @@ def triangle_contour(p1,p2,p3,fb,color):
     line(p2,p3, fb, color)
     
 def triangle_old(p1,p2,p3,fb, color):
-    #bubble sort, increasing y-axis
+    #tri à bulles, axe y croissant
     ax,bx,cx = p1[0], p2[0], p3[0]
     ay,by,cy = p1[1], p2[1], p3[1]
     if ay>by : ax,bx = bx,ax ; ay,by = by,ay
@@ -116,16 +116,16 @@ def triangle_old(p1,p2,p3,fb, color):
     if ay != by:
         segment_height = by-ay
         for y in range(ay,by): #interpolation linéaire
-            x1 = ax + ((cx-ax)*(y-ay)) // total_height #find x from y (from a to c)
-            x2 = ax + ((bx-ax)*(y-ay)) // segment_height #find x from y (from a to b)
+            x1 = ax + ((cx-ax)*(y-ay)) // total_height #trouver x à partir de y (de a à c)
+            x2 = ax + ((bx-ax)*(y-ay)) // segment_height #trouver x à partir de y (de a à b)
             line([x1,y],[x2,y], fb, color)
         
     if by != cy:
         segment_height = cy-by
         ax,bx,cx = p1[0], p2[0], p3[0]
         for y in range(by,cy): #interpolation linéaire
-            x1 = ax + ((cx-ax)*(y-ay)) // total_height #find x from y (from a to c)
-            x2 = ax + ((bx-ax)*(y-ay)) // segment_height #find x from y (from a to b)
+            x1 = ax + ((cx-ax)*(y-ay)) // total_height #trouver x �� partir de y (de a à c)
+            x2 = ax + ((bx-ax)*(y-ay)) // segment_height #trouver x à partir de y (de a à b)
             line([x1,y],[x2,y], fb, color)
         
 def triangle_new(p1,p2,p3, fb, color):
@@ -133,7 +133,7 @@ def triangle_new(p1,p2,p3, fb, color):
     bx, by = p2
     cx, cy = p3
     
-    # bounding box
+    # boîte englobante
     bbminx = min(ax, bx, cx)
     bbminy = min(ay, by, cy)
     bbmaxx = max(ax, bx, cx)
@@ -149,20 +149,20 @@ def triangle_new(p1,p2,p3, fb, color):
                 alpha = signed_triangle_area(x, y, bx, by, cx, cy) / total_area
                 beta  = signed_triangle_area(x, y, cx, cy, ax, ay) / total_area
                 gamma = signed_triangle_area(x, y, ax, ay, bx, by) / total_area
-                if alpha < 0 or beta < 0 or gamma < 0: #pixel outside the triangle
+                if alpha < 0 or beta < 0 or gamma < 0: #pixel en dehors du triangle
                     continue
                 
-                #color = (alpha * 255, beta * 255, gamma * 255, 255) #coloration barycentrique RGB
+                #couleur = (alpha * 255, beta * 255, gamma * 255, 255) #coloration barycentrique RGB
                 
                 #g = min(alpha,beta,gamma)
-                #color = (g * 255, g * 255, g * 255, 255) #coloration barycentrique grayscale avec min ou max
+                #couleur = (g * 255, g * 255, g * 255, 255) #coloration barycentrique niveaux de gris avec min ou max
                 set(x,y,fb, color)
     
 def triangle_new_depth_interpolation(s1,s2,s3, fb, color, zb):
     ax, ay, az = s1
     bx, by, bz = s2
     cx, cy, cz = s3
-    # bounding box
+    # boîte englobante
     bbminx = min(ax, bx, cx)
     bbminy = min(ay, by, cy)
     bbmaxx = max(ax, bx, cx)
@@ -180,23 +180,23 @@ def triangle_new_depth_interpolation(s1,s2,s3, fb, color, zb):
                 gamma = signed_triangle_area(x, y, ax, ay, bx, by) / total_area
                 
                 
-                if alpha < 0 or beta < 0 or gamma < 0: #pixel outside the triangle
+                if alpha < 0 or beta < 0 or gamma < 0: #pixel en dehors du triangle
                     continue
                 
-                #compute z
+                #calculer z
                 z = alpha*az + beta * bz + gamma * cz
                 
                 if 0<=x<width and 0<=y<height:
                     if z >= zb[x][y]:
                         set(x,y,zb,z)
-                        #set pixel, only if not behind already set one                                                
+                        #définir le pixel, seulement s'il n'est pas derrière un pixel déjà défini
                         
                         z_min = zb[width][height]
                         z_max = zb[width+1][height+1]
                         
-                        ########change the *__
+                        ########modifier le *__
                         c = int(round((abs(z - z_min)/(z_max - z_min))*255)); c = 0 if c<0 else (255 if c>255 else c)
-                        ##remove to have random colours
+                        ##supprimer pour avoir des couleurs aléatoires
                         color = (c,c,c,255)
                         set(x,y,fb, color)
     
@@ -244,7 +244,7 @@ def obj_to_triangles_grayscale_depth_interpolation(fichier,fb, zb):
         #
         p1,p2,p3 = camera.normalize(p1, bounds), camera.normalize(p2, bounds), camera.normalize(p3, bounds)### pour agrandir au risque de déformer
         
-        #camera
+        #caméra
         
         
 
@@ -255,12 +255,12 @@ def obj_to_triangles_grayscale_depth_interpolation(fichier,fb, zb):
         z_max = bounds[2][1]
         z_min = bounds[2][0]
         
-        #last values of zb are z_min and z_max
+        #dernières valeurs de zb sont z_min et z_max
         zb[width][height] = z_min
         zb[width+1][height+1] = z_max
 
         
-        def project_with_depth(s): #camera.project [x,y,z] into [x',y',z]
+        def project_with_depth(s): #caméra.projeter [x,y,z] dans [x',y',z]
             x,y,z = s
             scale = 400 ##########################################
             cx, cy = width // 2, height // 2
@@ -269,8 +269,6 @@ def obj_to_triangles_grayscale_depth_interpolation(fichier,fb, zb):
         p1,p2,p3 = project_with_depth(p1), project_with_depth(p2), project_with_depth(p3)
         
         triangle_new_depth_interpolation(p1,p2,p3, fb, color, zb)
-
-
 
 
 
@@ -287,7 +285,7 @@ def obj_to_triangles_RGBA(fichier,fb):
         triangle_new(p1,p2,p3,fb,color)
             
 
-###main
+###principal
 clear(framebuffer,white)
 #obj_to_lines(fichier, framebuffer, red)
 #obj_to_triangles_grayscale_depth_interpolation(fichier,framebuffer,zbuffer)
@@ -300,10 +298,7 @@ p1,p2, p3, p4 =  [70,100], [40,50], [60, 30], [16,90]
 #triangle_new(p1,p3,p4,framebuffer, red )
 obj_to_triangles_grayscale_depth_interpolation(fichier,framebuffer, zbuffer)
 
-###rendering
+###rendu
 img = Image.fromarray(framebuffer)
 Image.fromarray(framebuffer, 'RGBA').show()
 img.save("a_line.png")
-
-
-
