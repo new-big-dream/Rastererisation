@@ -212,7 +212,7 @@ def triangle(clip, fb, zb, color):
     cx, cy = screen[2]
     
     # Profondeurs après division perspective
-    az, bz, cz = ndc[0][3], ndc[1][3], ndc[2][3]
+    az, bz, cz = ndc[0][2], ndc[1][2], ndc[2][2]
     
     # ---- Boîte englobante ----
     bbminx = int(min(ax, bx, cx))
