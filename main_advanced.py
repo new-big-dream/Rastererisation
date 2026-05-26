@@ -242,7 +242,7 @@ def triangle(clip, fb, zb, color):
                 
                 if 0 <= x < width and 0 <= y < height:
                     if z >= zb[x][y]:
-                        ### coloration selon la profondeur
+                        # Met à jour le z-buffer
                         set(x, y, zb, z)
                         
                         # Coloration basée sur la profondeur (à enlever pour avoir coloration aléatoire ou utiliser coloration de phong)
@@ -253,7 +253,8 @@ def triangle(clip, fb, zb, color):
                         c = int(round((abs(z - z_min) / (z_max - z_min)) * 40)) #on suppose l'objet non plat (3D par hypothèse)
                         c = 0 if c < 0 else (255 if c > 255 else c)
                         color = (c, c, c, 255)
-                        # Affiche le pixel
+                        
+                        # Met à jour le buffer pour afficher le pixel
                         set(x, y, fb, color)
 
 
