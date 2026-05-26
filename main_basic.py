@@ -478,9 +478,9 @@ def main():
     obj_to_triangles_grayscale_depth_interpolation(file, framebuffer, zbuffer)
     
     # Affiche et sauvegarde l'image rendue
-    img = Image.fromarray(framebuffer)
-    Image.fromarray(framebuffer, 'RGBA').show()
-    img.save("a_line.png")
+    img = Image.fromarray(framebuffer, 'RGBA')
+  # img.save("rendered_output.png")
+    img.show()
 
 
 if __name__ == "__main__":
