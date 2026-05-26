@@ -35,8 +35,7 @@ height = 1080
 
 # Framebuffer et Z-buffer
 framebuffer = np.zeros((width, height, 4), dtype=np.uint8)  # RGBA
-zbuffer = np.array([[-np.inf for j in range(height + 2)] for i in range(width + 2)])
-
+zbuffer = np.full((width + 2, height + 2), -np.inf, dtype=np.float32)
 
 # ============================================================================
 # PROJECTIONS
