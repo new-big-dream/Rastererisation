@@ -163,7 +163,7 @@ def line(p1, p2, fb, color):
     bx, by = p2
     
     # Détermine si la ligne est abrupte
-    steep = abs(ax - by) < abs(ay - by)
+    steep = abs(ax - bx) < abs(ay - by)
     
     if steep:
         # Échange x et y si la ligne est abrupte
