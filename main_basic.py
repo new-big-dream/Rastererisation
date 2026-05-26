@@ -1,3 +1,12 @@
+"""
+Rastérisation 3D basique avec projections et triangulation.
+
+Ce script convertit un fichier OBJ en image 2D rendue avec :
+- Projection orthographique simple
+- Remplissage de triangles avec coordonnées barycentriques
+- Gestion optionnelle de la profondeur avec Z-buffer
+"""
+
 import numpy as np
 from PIL import Image
 import random
@@ -5,8 +14,14 @@ import random
 import parse
 import camera
 
+# ============================================================================
+# CONFIGURATION
+# ============================================================================
+
+# Chemin du fichier OBJ à charger
 file = "   "  # mettre l'adresse complète du fichier .obj
 
+# Définition des couleurs (format RGBA)
 white = (255, 255, 255, 255)  # automatiquement converti en tableau np.uint après assignement
 green = (0, 255, 0, 255)
 red = (255, 128, 64, 255)
@@ -14,23 +29,62 @@ blue = (0, 128, 255, 255)
 yellow = (255, 200, 0, 255)
 black = (0, 0, 0, 0)
 
+# Dimensions de l'écran
 width = 1920
 height = 1080
 
+# Framebuffer et Z-buffer
 framebuffer = np.zeros((width, height, 4), dtype=np.uint8)  # RGBA
 zbuffer = np.array([[-np.inf for j in range(height + 2)] for i in range(width + 2)])
 
 
+# ============================================================================
+# PROJECTIONS
+# ============================================================================
+
 def project(s):
-    """Projeter [x,y,z] dans [x',y']"""
+    """
+    Projette un point 3D en point écran 2D (projection orthographique).
+    
+    Args:
+        s: Point [x, y, z]
+        
+    Returns:
+        Point projeté [x', y'] en coordonnées écran
+    """
     x, y, z = s
     scale = 400
     cx, cy = width // 2, height // 2
     return [int(cx + x * scale), int(cy - y * scale)]
 
 
+def project_with_depth(s):
+    """
+    Projette un point 3D en point écran 2D avec conservation de la profondeur.
+    
+    Args:
+        s: Point [x, y, z]
+        
+    Returns:
+        Point projeté [x', y', z] conservant la profondeur
+    """
+    x, y, z = s
+    scale = 400
+    cx, cy = width // 2, height // 2
+    return [int(cx + x * scale), int(cy - y * scale), z]
+
+
+# ============================================================================
+# UTILITAIRES
+# ============================================================================
+
 def random_rgba():
-    """Générer une couleur RGBA aléatoire"""
+    """
+    Génère une couleur RGBA aléatoire.
+    
+    Returns:
+        Tuple (r, g, b, a) avec valeurs entre 0 et 255
+    """
     r = random.randint(0, 255)
     g = random.randint(0, 255)
     b = random.randint(0, 255)
@@ -39,20 +93,45 @@ def random_rgba():
 
 
 def set(x, y, fb, color):
-    """Définir un pixel à la couleur spécifiée. couleur = (R,G,B,A)"""
+    """
+    Place un pixel à la position (x, y) avec la couleur spécifiée.
+    
+    Args:
+        x, y: Coordonnées du pixel
+        fb: Framebuffer (ou Z-buffer)
+        color: Couleur RGBA ou valeur de profondeur
+    """
     if 0 <= x < len(fb) and 0 <= y < len(fb[x]):
         fb[x][y] = color
 
 
 def clear(fb, color):
-    """Effacer le framebuffer avec une couleur"""
+    """
+    Efface le framebuffer en le remplissant d'une couleur.
+    
+    Args:
+        fb: Framebuffer
+        color: Couleur de remplissage
+    """
     for x in range(len(fb)):
         for y in range(len(fb[x])):
             fb[x][y] = color
 
 
+# ============================================================================
+# PRIMITIVES GÉOMÉTRIQUES - LIGNES
+# ============================================================================
+
 def line_naif1(p1, p2, fb, color):
-    """Dessiner une ligne naïve avec paramètre t. p = [x,y]"""
+    """
+    Trace une ligne naïve avec paramètre t.
+    
+    Args:
+        p1: Point de départ [x, y]
+        p2: Point d'arrivée [x, y]
+        fb: Framebuffer
+        color: Couleur de la ligne
+    """
     ax, ay = p1
     bx, by = p2
 
@@ -63,7 +142,15 @@ def line_naif1(p1, p2, fb, color):
 
 
 def line_naif2(p1, p2, fb, color):
-    """Dessiner une ligne naïve en itérant sur x. p = [x,y]"""
+    """
+    Trace une ligne naïve en itérant sur x.
+    
+    Args:
+        p1: Point de départ [x, y]
+        p2: Point d'arrivée [x, y]
+        fb: Framebuffer
+        color: Couleur de la ligne
+    """
     ax, ay = p1
     bx, by = p2
     for x in range(ax, bx):
@@ -73,7 +160,16 @@ def line_naif2(p1, p2, fb, color):
 
 
 def line(p1, p2, fb, color):
-    """Dessiner une ligne avec l'algorithme de Bresenham. p = [x,y]"""
+    """
+    Trace une ligne avec l'algorithme de Bresenham.
+    Gère automatiquement les lignes abruptes et douces.
+    
+    Args:
+        p1: Point de départ [x, y]
+        p2: Point d'arrivée [x, y]
+        fb: Framebuffer
+        color: Couleur de la ligne
+    """
     ax, ay = p1
     bx, by = p2
     steep = abs(ax - by) < abs(ay - by)
@@ -92,27 +188,33 @@ def line(p1, p2, fb, color):
             set(x, y, fb, color)
 
 
-def obj_to_lines(fichier, fb, color):
-    """Convertir un fichier OBJ en lignes"""
-    tab = parse.lire(fichier)
-    for x, y, z in tab[1]:
-        a, b, c = tab[0][x - 1], tab[0][y - 1], tab[0][z - 1]
-        a, b, c = project(a), project(b), project(c)
-
-        line(a, b, fb, color)
-        line(a, c, fb, color)
-        line(b, c, fb, color)
-
+# ============================================================================
+# PRIMITIVES GÉOMÉTRIQUES - TRIANGLES
+# ============================================================================
 
 def triangle_contour(p1, p2, p3, fb, color):
-    """Dessiner le contour d'un triangle"""
+    """
+    Dessine le contour d'un triangle.
+    
+    Args:
+        p1, p2, p3: Sommets du triangle [x, y]
+        fb: Framebuffer
+        color: Couleur du contour
+    """
     line(p1, p2, fb, color)
     line(p1, p3, fb, color)
     line(p2, p3, fb, color)
 
 
 def triangle_old(p1, p2, p3, fb, color):
-    """Dessiner un triangle rempli (ancienne méthode avec tri à bulles)"""
+    """
+    Rastérise un triangle rempli avec l'ancienne méthode (tri à bulles).
+    
+    Args:
+        p1, p2, p3: Sommets du triangle [x, y]
+        fb: Framebuffer
+        color: Couleur du triangle
+    """
     # tri à bulles, axe y croissant
     ax, bx, cx = p1[0], p2[0], p3[0]
     ay, by, cy = p1[1], p2[1], p3[1]
@@ -149,7 +251,14 @@ def triangle_old(p1, p2, p3, fb, color):
 
 
 def triangle_new(p1, p2, p3, fb, color):
-    """Dessiner un triangle rempli avec les coordonnées barycentriques"""
+    """
+    Rastérise un triangle rempli avec les coordonnées barycentriques.
+    
+    Args:
+        p1, p2, p3: Sommets du triangle [x, y]
+        fb: Framebuffer
+        color: Couleur du triangle
+    """
     ax, ay = p1
     bx, by = p2
     cx, cy = p3
@@ -180,7 +289,15 @@ def triangle_new(p1, p2, p3, fb, color):
 
 
 def triangle_new_depth_interpolation(s1, s2, s3, fb, color, zb):
-    """Dessiner un triangle rempli avec interpolation de profondeur"""
+    """
+    Rastérise un triangle rempli avec interpolation de profondeur et Z-buffer.
+    
+    Args:
+        s1, s2, s3: Sommets du triangle [x, y, z]
+        fb: Framebuffer
+        color: Couleur du triangle
+        zb: Z-buffer
+    """
     ax, ay, az = s1
     bx, by, bz = s2
     cx, cy, cz = s3
@@ -222,8 +339,37 @@ def triangle_new_depth_interpolation(s1, s2, s3, fb, color, zb):
                         set(x, y, fb, color)
 
 
+# ============================================================================
+# CONVERSIONS OBJ -> RENDU
+# ============================================================================
+
+def obj_to_lines(fichier, fb, color):
+    """
+    Convertit un fichier OBJ en structure filaire (wireframe).
+    
+    Args:
+        fichier: Chemin du fichier OBJ
+        fb: Framebuffer
+        color: Couleur des arêtes
+    """
+    tab = parse.lire(fichier)
+    for x, y, z in tab[1]:
+        a, b, c = tab[0][x - 1], tab[0][y - 1], tab[0][z - 1]
+        a, b, c = project(a), project(b), project(c)
+
+        line(a, b, fb, color)
+        line(a, c, fb, color)
+        line(b, c, fb, color)
+
+
 def obj_to_triangles_grayscale(fichier, fb):
-    """Convertir un fichier OBJ en triangles avec coloration niveaux de gris"""
+    """
+    Convertit un fichier OBJ en triangles remplis avec coloration niveaux de gris.
+    
+    Args:
+        fichier: Chemin du fichier OBJ
+        fb: Framebuffer
+    """
     tab = parse.lire(fichier)
 
     xs = [p[0] for p in tab[0]]
@@ -253,7 +399,14 @@ def obj_to_triangles_grayscale(fichier, fb):
 
 
 def obj_to_triangles_grayscale_depth_interpolation(fichier, fb, zb):
-    """Convertir un fichier OBJ en triangles avec interpolation de profondeur"""
+    """
+    Convertit un fichier OBJ en triangles remplis avec interpolation de profondeur.
+    
+    Args:
+        fichier: Chemin du fichier OBJ
+        fb: Framebuffer
+        zb: Z-buffer
+    """
     tab = parse.lire(fichier)
 
     xs = [p[0] for p in tab[0]]
@@ -281,19 +434,19 @@ def obj_to_triangles_grayscale_depth_interpolation(fichier, fb, zb):
         zb[width][height] = z_min
         zb[width + 1][height + 1] = z_max
 
-        def project_with_depth(s):
-            """Projeter [x,y,z] dans [x',y',z]"""
-            x, y, z = s
-            scale = 400
-            cx, cy = width // 2, height // 2
-            return [int(cx + x * scale), int(cy - y * scale), z]
-
         p1, p2, p3 = project_with_depth(p1), project_with_depth(p2), project_with_depth(p3)
         triangle_new_depth_interpolation(p1, p2, p3, fb, color, zb)
 
 
 def obj_to_triangles_RGBA(fichier, fb):
-    """Convertir un fichier OBJ en triangles avec couleurs aléatoires RGBA"""
+    """
+    Convertit un fichier OBJ en triangles remplis avec couleurs aléatoires RGBA.
+    Utilise la projection orthographique simple (sans gestion de profondeur).
+    
+    Args:
+        fichier: Chemin du fichier OBJ
+        fb: Framebuffer
+    """
     tab = parse.lire(fichier)
     for x, y, z in tab[1]:
         p1, p2, p3 = tab[0][x - 1], tab[0][y - 1], tab[0][z - 1]
@@ -302,20 +455,27 @@ def obj_to_triangles_RGBA(fichier, fb):
         triangle_new(p1, p2, p3, fb, color)
 
 
-# Principal
-clear(framebuffer, white)
-# obj_to_lines(fichier, framebuffer, red)
-# obj_to_triangles_grayscale_depth_interpolation(fichier, framebuffer, zbuffer)
-# triangle2([100,500],[1000,10],[900,800], framebuffer, white)
+# ============================================================================
+# MAIN
+# ============================================================================
 
-p1, p2, p3, p4 = [70, 100], [40, 50], [60, 30], [16, 90]
-
-# obj_to_triangles_grayscale_depth_interpolation(file, framebuffer, zbuffer)
-# triangle_new(p1, p3, p4, framebuffer, red)
-
-obj_to_triangles_grayscale_depth_interpolation(fichier, framebuffer, zbuffer)
-
-# Rendu
-img = Image.fromarray(framebuffer)
-Image.fromarray(framebuffer, 'RGBA').show()
-img.save("a_line.png")
+if __name__ == "__main__":
+    # Efface le framebuffer
+    clear(framebuffer, white)
+    
+    # Test: # obj_to_lines(file, framebuffer, red)
+    # Test: # obj_to_triangles_grayscale_depth_interpolation(fichier, framebuffer, zbuffer)
+    # Test: # triangle2([100,500],[1000,10],[900,800], framebuffer, white)
+    
+    p1, p2, p3, p4 = [70, 100], [40, 50], [60, 30], [16, 90]
+    
+    # Test: # obj_to_triangles_grayscale_depth_interpolation(file, framebuffer, zbuffer)
+    # Test: # triangle_new(p1, p3, p4, framebuffer, red)
+    
+    # Rastérise le modèle OBJ avec profondeur
+    obj_to_triangles_grayscale_depth_interpolation(file, framebuffer, zbuffer)
+    
+    # Affiche et sauvegarde l'image rendue
+    img = Image.fromarray(framebuffer)
+    Image.fromarray(framebuffer, 'RGBA').show()
+    img.save("a_line.png")
