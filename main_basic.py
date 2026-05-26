@@ -172,7 +172,7 @@ def line(p1, p2, fb, color):
     """
     ax, ay = p1
     bx, by = p2
-    steep = abs(ax - by) < abs(ay - by)
+    steep = abs(ax - bx) < abs(ay - by)
     if steep:  # si abrupte, on augmente l'axe y
         ax, ay = ay, ax
         bx, by = by, bx
