@@ -21,7 +21,7 @@ import camera
 # ============================================================================
 
 # Chemin du fichier OBJ à charger
-fichier = "   "  # À remplacer par l'adresse complète du fichier .obj
+fichier = "path/to/your/file.obj"  # À remplacer par l'adresse complète du fichier .obj
 
 # Définition des couleurs (format RGBA)
 white = (255, 255, 255, 255)
@@ -247,7 +247,7 @@ def triangle(clip, fb, zb, color):
                         
                         # Coloration basée sur la profondeur (à enlever pour avoir coloration aléatoire ou utiliser coloration de phong)
                         z_min = zb[width][height]
-                        z_max = zb[width + 1][height + 1]
+                        z_max = zb[width + 1][height + 1] 
                         
                         # Normalise la profondeur en [0, 255]
                         c = int(round((abs(z - z_min) / (z_max - z_min)) * 40))
