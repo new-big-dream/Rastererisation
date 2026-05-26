@@ -459,12 +459,16 @@ def obj_to_triangles_RGBA(fichier, fb):
 # MAIN
 # ============================================================================
 
-if __name__ == "__main__":
+def main():
+    """
+    Point d'entrée du programme.
+    Efface le framebuffer et rastérise le modèle OBJ avec interpolation de profondeur.
+    """
     # Efface le framebuffer
     clear(framebuffer, white)
     
     # Test: # obj_to_lines(file, framebuffer, red)
-    # Test: # obj_to_triangles_grayscale_depth_interpolation(fichier, framebuffer, zbuffer)
+    # Test: # obj_to_triangles_grayscale_depth_interpolation(file, framebuffer, zbuffer)
     # Test: # triangle2([100,500],[1000,10],[900,800], framebuffer, white)
     
     p1, p2, p3, p4 = [70, 100], [40, 50], [60, 30], [16, 90]
@@ -479,3 +483,7 @@ if __name__ == "__main__":
     img = Image.fromarray(framebuffer)
     Image.fromarray(framebuffer, 'RGBA').show()
     img.save("a_line.png")
+
+
+if __name__ == "__main__":
+    main()

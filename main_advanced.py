@@ -365,7 +365,11 @@ def obj_to_triangles_RGBA(fichier, fb):
 # MAIN
 # ============================================================================
 
-if __name__ == "__main__":
+def main():
+    """
+    Point d'entrée du programme.
+    Efface le framebuffer et rastérise le modèle OBJ.
+    """
     # Efface le framebuffer
     clear(framebuffer, black)
     
@@ -374,3 +378,7 @@ if __name__ == "__main__":
     
     # Affiche l'image rendue
     Image.fromarray(framebuffer, 'RGBA').show()
+
+
+if __name__ == "__main__":
+    main()
