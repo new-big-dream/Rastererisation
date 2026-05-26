@@ -14,7 +14,6 @@ import random
 
 import parse
 import camera
-from main_basic import triangle_new
 #import shader
 
 # ============================================================================
@@ -359,7 +358,7 @@ def obj_to_triangles_RGBA(fichier, fb):
         p1, p2, p3 = tab[0][x - 1], tab[0][y - 1], tab[0][z - 1]
         p1, p2, p3 = project(p1), project(p2), project(p3)
         color = random_rgba()
-        triangle_new(p1, p2, p3, fb, color)
+        triangle_new(p1, p2, p3, fb, color) # Ne pas oublier de l'importer ou de la réécrire
 
 
 # ============================================================================
