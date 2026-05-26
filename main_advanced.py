@@ -250,7 +250,7 @@ def triangle(clip, fb, zb, color):
                         z_max = zb[width + 1][height + 1] 
                         
                         # Normalise la profondeur en [0, 255]
-                        c = int(round((abs(z - z_min) / (z_max - z_min)) * 40))
+                        c = int(round((abs(z - z_min) / (z_max - z_min)) * 40)) #on suppose l'objet non plat (3D par hypothèse)
                         c = 0 if c < 0 else (255 if c > 255 else c)
                         
                         # Affiche le pixel
