@@ -378,8 +378,9 @@ def main():
     rasterizer(fichier, framebuffer, zbuffer)
     
     # Affiche l'image rendue
-    Image.fromarray(framebuffer, 'RGBA').show()
-
+    img = Image.fromarray(framebuffer, 'RGBA')
+  # img.save("rendered_output.png")
+    img.show()
 
 if __name__ == "__main__":
     main()
