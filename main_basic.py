@@ -19,7 +19,7 @@ import camera
 # ============================================================================
 
 # Chemin du fichier OBJ à charger
-file = "   "  # mettre l'adresse complète du fichier .obj
+file = "path/to/your/file.obj"  # mettre l'adresse complète du fichier .obj
 
 # Définition des couleurs (format RGBA)
 white = (255, 255, 255, 255)  # automatiquement converti en tableau np.uint après assignement
@@ -35,7 +35,7 @@ height = 1080
 
 # Framebuffer et Z-buffer
 framebuffer = np.zeros((width, height, 4), dtype=np.uint8)  # RGBA
-zbuffer = np.array([[-np.inf for j in range(height + 2)] for i in range(width + 2)])
+zbuffer = np.full((width + 2, height + 2)
 
 
 # ============================================================================
@@ -241,7 +241,6 @@ def triangle_old(p1, p2, p3, fb, color):
 
     if by != cy:
         segment_height = cy - by
-        ax, bx, cx = p1[0], p2[0], p3[0]
         for y in range(by, cy):  # interpolation linéaire
             # trouver x à partir de y (de a à c)
             x1 = ax + ((cx - ax) * (y - ay)) // total_height
@@ -332,8 +331,8 @@ def triangle_new_depth_interpolation(s1, s2, s3, fb, color, zb):
 
                         z_min = zb[width][height]
                         z_max = zb[width + 1][height + 1]
-
-                        c = int(round((abs(z - z_min) / (z_max - z_min)) * 255))
+                        
+                        c = int(round((abs(z - z_min) / (z_max - z_min)) * 255)) #on suppose l'objet non plat (3D par hypothèse)
                         c = 0 if c < 0 else (255 if c > 255 else c)
                         color = (c, c, c, 255)
                         set(x, y, fb, color)
