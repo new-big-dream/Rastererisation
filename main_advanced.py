@@ -14,6 +14,7 @@ import random
 
 import parse
 import camera
+import triangle_new from main_basic
 #import shader
 
 # ============================================================================
