@@ -3,5 +3,6 @@ Le but de ce programme et de convertir un fichier .obj (qui représente un objet
 
 
 Voici quelques exemples de rendus générés très rapidement, sans texture :
+
 <img width="200"  alt="image" src="https://github.com/user-attachments/assets/4eaaf53a-7ff0-4248-809c-7157f520b19e" />
 <img width="200" alt="image" src="https://github.com/user-attachments/assets/c28700e9-9461-4f9b-9a37-6a5d30aecb04" />
