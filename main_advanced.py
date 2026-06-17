@@ -7,7 +7,7 @@ Ce script convertit un fichier OBJ en image 2D rendue avec :
 - Caméra positionnée dans la scène
 - Coordonnées barycentriques pour le remplissage de triangles
 
-Modifier dans la fonction triangle la méthode de coloration (par défaut elle est aléatoire, ici, elle est par profondeur).
+Il est possible de modifier dans la fonction triangle la méthode de coloration (par défaut elle est aléatoire, ici, elle est par profondeur ; elle peut également faire recours à la coloration de phong).
 """
 
 import numpy as np
