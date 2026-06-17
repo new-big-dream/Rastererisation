@@ -6,6 +6,8 @@ Ce script convertit un fichier OBJ en image 2D rendue avec :
 - Z-buffer pour l'élimination des surfaces cachées
 - Caméra positionnée dans la scène
 - Coordonnées barycentriques pour le remplissage de triangles
+
+Modifier dans la fonction triangle la méthode de coloration (par défaut elle est aléatoire, ici, elle est par profondeur).
 """
 
 import numpy as np
