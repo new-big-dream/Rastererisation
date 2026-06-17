@@ -1,3 +1,4 @@
+# Rastérerisation
 Le but de ce programme est de convertir un fichier `.obj` (qui représente un objet 3D) en un rendu 2D convaincant. L'intérêt de ce code réside moins dans son utilisation pratique que dans l'exploration de ses fonctions et de leur structure ; il est fortement commenté en français afin d'en faciliter la lecture.
 
 
